@@ -1,7 +1,7 @@
 import { Page } from "@playwright/test";
 import LoginPage from "../pages/login/LoginPage";
 import HomePage from "../pages/home/HomePage";
-import { BASE_URL } from "../models/arguments";
+import { BASE_URL } from "../models/Arguments";
 
 const goToStartPage = async (page: Page): Promise<void> => {
   await page.goto(BASE_URL);
