@@ -37,12 +37,30 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
+          cache: "npm"
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       - name: Install dependencies
         run: npm ci
       - name: Install Playwright Browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps
+      - name: Install Playwright system deps (cached browsers)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps
       - name: Run Playwright tests
-        run: npx playwright test ${{ inputs.testNamePattern && format('--grep {0}', inputs.testNamePattern) || (inputs.testTags && format('--grep {0}', inputs.testTags)) }}
+        run: |
+          GREP_ARGS=""
+          if [ -n "${{ inputs.testNamePattern }}" ]; then
+            GREP_ARGS="--grep '${{ inputs.testNamePattern }}'"
+          elif [ -n "${{ inputs.testTags }}" ]; then
+            GREP_ARGS="--grep '${{ inputs.testTags }}'"
+          fi
+          npx playwright test $GREP_ARGS
         env:
           TEST_ENV: ${{ inputs.environment || 'staging' }}
       - uses: actions/upload-artifact@v4
