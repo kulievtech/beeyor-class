@@ -14,7 +14,7 @@ on:
         description: "Test tags filter"
         required: false
         type: choice
-        default: "@regression"
+        default: ""
         options:
           - "@smoke"
           - "@regression"
@@ -42,7 +42,7 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: Run Playwright tests
-        run: npx playwright test ${{ inputs.testNamePattern && format('--grep {0}', inputs.testNamePattern) }} ${{ inputs.testTags && format('--grep {0}', inputs.testTags) }}
+        run: npx playwright test ${{ inputs.testNamePattern && format('--grep {0}', inputs.testNamePattern) || (inputs.testTags && format('--grep {0}', inputs.testTags)) }}
         env:
           TEST_ENV: ${{ inputs.environment || 'staging' }}
       - uses: actions/upload-artifact@v4
