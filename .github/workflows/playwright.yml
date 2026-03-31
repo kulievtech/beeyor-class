@@ -1,20 +1,14 @@
 name: Playwright Tests
 on:
-  # Manual trigger with input parameters for environment and test type
+  # Manual trigger with input parameters for test type
   workflow_dispatch:
     inputs:
-      environment:
-        description: "Choose Environment to Run Tests Against"
-        required: true
-        default: "UAT"
-        type: choice
-        options: ["Staging", "Demo", "UAT"]
       test_type:
         description: "Choose Test Suite to Run"
         required: true
-        default: "Smoke"
+        default: "smoke"
         type: choice
-        options: ["Smoke", "Regression"]
+        options: ["smoke", "regression"]
       test_name_filter:
         description: "Optional: Filter tests by name (regex supported)"
         required: false
@@ -35,14 +29,13 @@ jobs:
         run: npx playwright install --with-deps
       - name: Run Playwright tests
         env:
-          ENVIRONMENT: ${{ github.event.inputs.environment }}
           TEST_TYPE: ${{ github.event.inputs.test_type }}
           TEST_NAME_FILTER: ${{ github.event.inputs.test_name_filter }}
         run: |
           if [ -z "$TEST_NAME_FILTER" ]; then
-            npx playwright test --grep "@$TEST_TYPE" --grep "@$ENVIRONMENT"
+            npx playwright test --grep "@$TEST_TYPE"
           else
-            npx playwright test --grep "$TEST_NAME_FILTER" --grep "@$TEST_TYPE" --grep "@$ENVIRONMENT"
+            npx playwright test --grep "$TEST_NAME_FILTER"
           fi
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
