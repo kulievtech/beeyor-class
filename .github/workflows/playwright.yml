@@ -1,6 +1,6 @@
 name: Playwright Tests
 on:
-  # Manual trigger with inputs
+  # Manual trigger with input parameters for environment and test type
   workflow_dispatch:
     inputs:
       environment:
@@ -34,7 +34,16 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: Run Playwright tests
-        run: npx playwright test
+        env:
+          ENVIRONMENT: ${{ github.event.inputs.environment }}
+          TEST_TYPE: ${{ github.event.inputs.test_type }}
+          TEST_NAME_FILTER: ${{ github.event.inputs.test_name_filter }}
+        run: |
+          if [ -z "$TEST_NAME_FILTER" ]; then
+            npx playwright test --grep "@$TEST_TYPE" --grep "@$ENVIRONMENT"
+          else
+            npx playwright test --grep "$TEST_NAME_FILTER" --grep "@$TEST_TYPE" --grep "@$ENVIRONMENT"
+          fi
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
